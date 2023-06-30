@@ -4,8 +4,10 @@ env
 __pycache__
 
 # dependencies
-/node_modules
-/.pnp
+node_modules
+front/node_modules/
+front/node_modules/.cache/
+front/.pnp
 .pnp.js
 
 # testing

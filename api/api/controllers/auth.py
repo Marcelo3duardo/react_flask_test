@@ -92,7 +92,8 @@ def register_user():
             #flash(error)
             return jsonify({"error":error})
 
-    return render_template('register.html')
+    return '200'
+    #return render_template('register.html')
 
 @bp.route('/users', methods=['GET'])
 def users():

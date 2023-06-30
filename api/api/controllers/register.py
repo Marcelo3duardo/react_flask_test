@@ -15,33 +15,25 @@ repo = userRepository()
 @bp.route('/register', methods=('POST','GET'))
 def register_user():
     if request.method == 'POST':
-        #username = request.get_json['username']
-        #fullname = request.get_json['fullname']
-        #email = request.form['email']
-        #password = request.form['password']
+
         user = request.get_json()
         error = None
 
-        if not user:
+        if user['username'] == "":
             error = 'user is required.'
-        #elif not fullname:
-        #    error = 'Fullname is required.'
-        #elif not email:
-        #    error = 'Email is required.'
-        #elif not password:
-        #    error = 'Password is required.'
+        elif user['fullname'] == "":
+            error = 'Fullname is required.'
+        elif user['email'] == "":
+            error = 'Email is required.'
+        elif user['password'] == "":
+            error = 'Password is required.'
 
-        #user = (username,fullname,email,password)
-        print(user['id'])
         if error is None:
-            return jsonify(user)
-            repo.insert_user(user['username'],user['fullname'],email,password)
-            #return jsonify({"username":username,"fullname":fullname,
-            #                "email":email,"password":password}
-            #                )
+            repo.insert_user(user['username'],user['fullname'],user['email'],user['password'])
+            return jsonify(user),200
             #return redirect(url_for("register.users"))
         else:
-            flash(error)
+            #flash(error)
             return jsonify({"error":error})
 
     return render_template('register.html')
@@ -51,4 +43,3 @@ def users():
     users = repo.list_users()
     return users
     
-    #return jsonify(render_template('users.html', users=users))

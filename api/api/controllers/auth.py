@@ -4,12 +4,12 @@ import click
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 
-from api.database.db import get_db
+from api.db import get_db
 from api.repository import userRepository
-from api.utils.errors import check_register, check_login
+#from api.utils.errors import check_register, check_login
 
 bp = Blueprint('auth', __name__, url_prefix='/')
 
@@ -23,31 +23,40 @@ def load_logged_in_user():
     else:
         g.user = Users.search_id(user_id)
 
-@bp.route('/', methods=('GET', 'POST'))
+@bp.route('/login', methods=('GET', 'POST'))
 def login():
     if g.user:
-        return redirect(url_for('dashboard.dashboard'))
+        return jsonify(session)
+        #return redirect(url_for('dashboard.dashboard'))
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        user_login = request.get_json()
 
-        user = Users.search(username)
+        user = Users.search(user_login['username'])
 
-        error = check_login(user,password)
+        error = None
+
+        if user_login['username'] == "":
+            error = 'user is required.'
+        elif user_login['password'] == "":
+            error = 'password is required.'
+        elif not check_password_hash(user['password'],user_login['password']):
+            error = 'wrong password.'
 
         if error is None:
             session.clear()
             session['user_id'] = user['id']
-            return redirect(url_for('dashboard.dashboard'))
+            return jsonify({"token": session['user_id']})
+      
 
-        flash(error)
+        return jsonify({"error": error})
 
-    return render_template('auth/login.html')
+    #return render_template('auth/login.html')
 
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('auth.login'))
+    return jsonify({"token": session}),200
+    #return redirect(url_for('auth.login'))
 
 def login_required(view):
     @functools.wraps(view)
@@ -61,28 +70,32 @@ def login_required(view):
 @bp.route('/register', methods=('POST','GET'))
 def register_user():
     if request.method == 'POST':
-        username = request.form['username']
-        fullname = request.form['fullname']
-        email = request.form['email']
-        password = request.form['password']
 
-        error = check_register(username,fullname,email,password)
+        user = request.get_json()
+        error = None
+
+        if user['username'] == "":
+            error = 'user is required.'
+        elif user['fullname'] == "":
+            error = 'Fullname is required.'
+        elif user['email'] == "":
+            error = 'Email is required.'
+        elif user['password'] == "":
+            error = 'Password is required.'
+        
+        error = Users.insert_user(user['username'],user['fullname'],user['email'],user['password'])
 
         if error is None:
-            db = get_db()
-            try:
-                Users.insert(username,fullname,email,generate_password_hash(password))
-            except db.IntegrityError:
-                error = f"User {username} is already registered."
-                return jsonify({"error":error})
-            else:
-                return jsonify({"username":username,"fullname":fullname,
-                            "email":email,"password":password}
-                            )
-                return redirect(url_for("auth.login"))
-        flash(error)
+            return jsonify(user),200
+            #return redirect(url_for("register.users"))
+        else:
+            #flash(error)
+            return jsonify({"error":error})
 
-    return render_template('auth/register.html')
+    return render_template('register.html')
 
-
+@bp.route('/users', methods=['GET'])
+def users():
+    users = Users.list_users()
+    return users
 

@@ -32,3 +32,10 @@ class userRepository:
             db.commit()
         except db.IntegrityError:
             error = f"User {username} is already registered."
+        return error
+
+    def search(self, username):
+        db = get_db()
+        return db.execute(
+            'SELECT * FROM user WHERE username = ?', (username,)
+        ).fetchone()

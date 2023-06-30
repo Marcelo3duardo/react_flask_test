@@ -12,29 +12,37 @@ bp = Blueprint('register', __name__, url_prefix='/')
 
 repo = userRepository()
 
-@bp.route('/cadastro', methods=('POST','GET'))
+@bp.route('/register', methods=('POST','GET'))
 def register_user():
     if request.method == 'POST':
-        username = request.form['username']
-        fullname = request.form['fullname']
-        email = request.form['email']
-        password = request.form['password']
+        #username = request.get_json['username']
+        #fullname = request.get_json['fullname']
+        #email = request.form['email']
+        #password = request.form['password']
+        user = request.get_json()
         error = None
 
-        if not username:
-            error = 'Username is required.'
-        elif not fullname:
-            error = 'Fullname is required.'
-        elif not email:
-            error = 'Email is required.'
-        elif not password:
-            error = 'Password is required.'
+        if not user:
+            error = 'user is required.'
+        #elif not fullname:
+        #    error = 'Fullname is required.'
+        #elif not email:
+        #    error = 'Email is required.'
+        #elif not password:
+        #    error = 'Password is required.'
 
+        #user = (username,fullname,email,password)
+        print(user['id'])
         if error is None:
-            repo.insert_user(username,fullname,email,password)
-            return redirect(url_for("register.users"))
+            return jsonify(user)
+            repo.insert_user(user['username'],user['fullname'],email,password)
+            #return jsonify({"username":username,"fullname":fullname,
+            #                "email":email,"password":password}
+            #                )
+            #return redirect(url_for("register.users"))
         else:
             flash(error)
+            return jsonify({"error":error})
 
     return render_template('register.html')
 

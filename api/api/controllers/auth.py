@@ -101,5 +101,5 @@ def register_user():
 @bp.route('/users', methods=['GET'])
 def users():
     users = Users.get()
-    return users
+    return jsonify(users)
 

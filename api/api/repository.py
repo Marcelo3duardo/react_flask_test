@@ -3,9 +3,18 @@ from api.db import get_db
 class userRepository:
     def get(self):
         db = get_db()
-        return db.execute(
+        rows = db.execute(
             'SELECT * FROM user'
         ).fetchall()
+        users = []
+        for i in rows:
+            user = {}
+            user["username"] = i["username"]
+            user["fullname"] = i["fullname"]
+            user["email"] = i["email"]
+            user["password"] = i["password"]
+            users.append(user)
+        return users
 
     def insert(self, username, fullname, email, password):
         db = get_db()

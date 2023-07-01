@@ -82,9 +82,12 @@ def register_user():
             error = 'Email is required.'
         elif user['password'] == "":
             error = 'Password is required.'
-        
-        error = Users.insert_user(user['username'],user['fullname'],user['email'],user['password'])
-
+       
+        password = generate_password_hash(user['password'])
+        try:
+            Users.insert(user['username'],user['fullname'],user['email'],password)
+        except:
+            error = f"User {user['username']} is already registered."
         if error is None:
             return jsonify(user),200
             #return redirect(url_for("register.users"))
@@ -97,6 +100,6 @@ def register_user():
 
 @bp.route('/users', methods=['GET'])
 def users():
-    users = Users.list_users()
+    users = Users.get()
     return users
 

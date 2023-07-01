@@ -23,6 +23,7 @@ class userRepository:
 
     def insert_user(self, username, fullname, email, password):
         db = get_db()
+        error = None
         try:
             db.execute(
                 "INSERT INTO user (username, fullname, email, password) VALUES (?, ?, ?, ?)",
